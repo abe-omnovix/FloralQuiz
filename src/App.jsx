@@ -25,6 +25,7 @@ function App() {
   const [flashcardRevealed, setFlashcardRevealed] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [isReviewMode, setIsReviewMode] = useState(false);
+  const [isReloadingImage, setIsReloadingImage] = useState(false);
 
   // Generate quiz questions
   const generateQuiz = async (numQuestions = 10, reviewMode = false) => {
@@ -114,6 +115,32 @@ function App() {
     setCurrentQuestion(0);
     setScore(0);
     setGameState('quiz');
+  };
+
+  // Reload the current question's image
+  const reloadCurrentImage = async () => {
+    if (isReloadingImage) return; // Prevent multiple simultaneous reloads
+
+    setIsReloadingImage(true);
+
+    try {
+      const currentQ = quizQuestions[currentQuestion];
+      const newImageUrl = await fetchFlowerImageSmart(currentQ.flower);
+
+      // Update the current question with the new image
+      const updatedQuestions = [...quizQuestions];
+      updatedQuestions[currentQuestion] = {
+        ...currentQ,
+        imageUrl: newImageUrl
+      };
+
+      setQuizQuestions(updatedQuestions);
+    } catch (error) {
+      console.error('Error reloading image:', error);
+      alert('Failed to load new image. Please try again.');
+    } finally {
+      setIsReloadingImage(false);
+    }
   };
 
   const handleAnswerSelect = (option) => {
@@ -327,11 +354,26 @@ function App() {
                   alt="Flower to identify"
                   className="flower-image"
                 />
+                <button
+                  onClick={reloadCurrentImage}
+                  className="btn-reload-image"
+                  disabled={isReloadingImage || showFeedback}
+                  title="Load a different image for this flower"
+                >
+                  {isReloadingImage ? '🔄 Loading...' : '🔄 Reload Image'}
+                </button>
               </div>
             ) : (
               <div className="no-image">
                 <p>Image not available</p>
                 <p className="scientific-name">Scientific name: {currentQ.flower.scientific}</p>
+                <button
+                  onClick={reloadCurrentImage}
+                  className="btn-reload-image"
+                  disabled={isReloadingImage}
+                >
+                  {isReloadingImage ? '🔄 Loading...' : '🔄 Try Loading Image'}
+                </button>
               </div>
             )}
 
