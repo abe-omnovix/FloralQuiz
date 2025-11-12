@@ -251,19 +251,22 @@ export function getSmartQuizFlowers(allFlowers, count) {
       // Weight by list priority (lower number = higher priority)
       score += (4 - flower.listPriority) * 100;
 
-      // Boost based on stage (earlier stages get more practice)
+      // Balanced stage boost - ensures all stages appear, with slight preference for earlier stages
       const stageBoost = {
-        flashcard: 80,
-        mc: 60,
-        short: 40,
-        scientific: 20
+        flashcard: 30,
+        mc: 25,
+        short: 20,
+        scientific: 15
       };
       score += stageBoost[flowerProgress.stage] || 0;
 
-      // Slight boost for items not seen recently
+      // Time since last seen is now more important for stage distribution
       if (flowerProgress.lastSeen) {
         const daysSince = (Date.now() - new Date(flowerProgress.lastSeen)) / (1000 * 60 * 60 * 24);
-        score += Math.min(daysSince * 5, 30);
+        score += Math.min(daysSince * 10, 60); // Increased weight for time-based selection
+      } else {
+        // Never seen before - high priority
+        score += 40;
       }
 
       tier2.push({ flower, score });
