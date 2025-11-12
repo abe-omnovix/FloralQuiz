@@ -400,7 +400,7 @@ export function getAllFlowerStats(allFlowers) {
     if (!flowerProgress) {
       return {
         flower,
-        stage: MasteryStage.MULTIPLE_CHOICE,
+        stage: MasteryStage.FLASHCARD,
         correctCount: 0,
         incorrectCount: 0,
         stageCorrectCount: 0,
