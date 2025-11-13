@@ -33,18 +33,12 @@ function initializeFlower(scientificName) {
       stageCorrectCount: 0, // Views/correct answers in current stage
       lastSeen: null,
       flaggedForReview: false,
-      easeFactor: 2.5, // Anki default, range 1.3-4.0
-      reviewInterval: 1, // Days until next review
-      nextReviewDate: null, // Calculated date for next review
       isNew: true // Never been seen before
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
   }
-  // Migrate old data that doesn't have new fields
-  else if (!progress[scientificName].hasOwnProperty('easeFactor')) {
-    progress[scientificName].easeFactor = 2.5;
-    progress[scientificName].reviewInterval = 1;
-    progress[scientificName].nextReviewDate = null;
+  // Ensure isNew field exists for older data
+  else if (!progress[scientificName].hasOwnProperty('isNew')) {
     progress[scientificName].isNew = false;
     localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
   }
@@ -59,39 +53,6 @@ function initializeFlower(scientificName) {
 export function getFlowerProgress(scientificName) {
   const progress = getProgress();
   return progress[scientificName] || initializeFlower(scientificName);
-}
-
-/**
- * Calculate next review date based on interval
- * @param {number} intervalDays - Number of days until next review
- * @returns {string} ISO date string for next review
- */
-function calculateNextReviewDate(intervalDays) {
-  const now = new Date();
-  now.setDate(now.getDate() + intervalDays);
-  return now.toISOString();
-}
-
-/**
- * Get base interval for stage
- * @param {string} stage - Current mastery stage
- * @returns {number} Base interval in days
- */
-function getBaseIntervalForStage(stage) {
-  switch (stage) {
-    case MasteryStage.FLASHCARD:
-      return 1;
-    case MasteryStage.MULTIPLE_CHOICE:
-      return 2;
-    case MasteryStage.SHORT_ANSWER:
-      return 4;
-    case MasteryStage.SCIENTIFIC_NAME:
-      return 7;
-    case MasteryStage.MASTERY:
-      return 14;
-    default:
-      return 1;
-  }
 }
 
 /**
@@ -112,14 +73,6 @@ export function recordCorrectAnswer(scientificName) {
   flowerData.lastSeen = new Date().toISOString();
   flowerData.flaggedForReview = false;
   flowerData.isNew = false;
-
-  // Adjust ease factor (increase for correct answers)
-  flowerData.easeFactor = Math.min(4.0, flowerData.easeFactor + 0.1);
-
-  // Calculate new interval based on ease factor
-  const baseInterval = getBaseIntervalForStage(flowerData.stage);
-  flowerData.reviewInterval = Math.round(baseInterval * flowerData.easeFactor);
-  flowerData.nextReviewDate = calculateNextReviewDate(flowerData.reviewInterval);
 
   // Check for stage progression
   const stage = flowerData.stage;
@@ -168,13 +121,6 @@ export function recordIncorrectAnswer(scientificName) {
   flowerData.lastSeen = new Date().toISOString();
   flowerData.flaggedForReview = true;
   flowerData.isNew = false;
-
-  // Adjust ease factor (decrease for incorrect answers)
-  flowerData.easeFactor = Math.max(1.3, flowerData.easeFactor - 0.2);
-
-  // Reset interval to 1 day for failed items (need frequent review)
-  flowerData.reviewInterval = 1;
-  flowerData.nextReviewDate = calculateNextReviewDate(1);
 
   progress[scientificName] = flowerData;
   localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
@@ -228,25 +174,13 @@ export function getSmartQuizFlowers(allFlowers, count) {
       earlyStageCount++;
     }
 
-    // Check if overdue for review
-    const isOverdue = flowerProgress.nextReviewDate &&
-                     new Date(flowerProgress.nextReviewDate) < now;
-
-    // Tier 1: Critical review
-    if (flowerProgress.flaggedForReview || isOverdue) {
+    // Tier 1: Critical review (flagged for review)
+    if (flowerProgress.flaggedForReview) {
       let score = 1000; // High base priority
 
       // Recently failed gets highest priority
-      if (flowerProgress.flaggedForReview) {
-        const hoursSince = (Date.now() - new Date(flowerProgress.lastSeen)) / (1000 * 60 * 60);
-        score += (24 - Math.min(hoursSince, 24)) * 10; // More recent = higher score
-      }
-
-      // Overdue items
-      if (isOverdue) {
-        const daysOverdue = (now - new Date(flowerProgress.nextReviewDate)) / (1000 * 60 * 60 * 24);
-        score += daysOverdue * 50;
-      }
+      const hoursSince = (Date.now() - new Date(flowerProgress.lastSeen)) / (1000 * 60 * 60);
+      score += (24 - Math.min(hoursSince, 24)) * 10; // More recent = higher score
 
       tier1.push({ flower, score });
     }
