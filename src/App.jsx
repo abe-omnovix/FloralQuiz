@@ -68,8 +68,8 @@ function App() {
       let questionData = {
         flower,
         imageUrl,
-        stage,
-        stageCorrectCount: progress.stageCorrectCount
+        stage
+        // Note: stageCorrectCount is NOT stored here - it's fetched dynamically to ensure accuracy
       };
 
       // Generate question based on mastery stage
@@ -184,6 +184,11 @@ function App() {
   const checkScientificAnswer = (userAnswer, currentQ) => {
     const normalized = userAnswer.trim().toLowerCase();
     return currentQ.scientificAnswer.toLowerCase() === normalized;
+  };
+
+  // Get current progress for a flower (fetches live data from localStorage)
+  const getCurrentProgress = (scientificName) => {
+    return getFlowerProgress(scientificName);
   };
 
   const handleSubmitAnswer = () => {
@@ -366,7 +371,7 @@ function App() {
                 <span className="stage-badge">{getStageBadgeText(currentQ.stage)}</span>
                 {currentQ.stage !== MasteryStage.MASTERY && (
                   <span className="stage-progress">
-                    {currentQ.stageCorrectCount}/2 correct
+                    {getCurrentProgress(currentQ.flower.scientific).stageCorrectCount}/2 correct
                   </span>
                 )}
               </div>
@@ -512,8 +517,8 @@ function App() {
                   <>
                     <p>Flashcard viewed!</p>
                     <p className="progress-info">
-                      Progress: {currentQ.stageCorrectCount + 1}/2 views in this stage
-                      {currentQ.stageCorrectCount + 1 >= 2 && (
+                      Progress: {getCurrentProgress(currentQ.flower.scientific).stageCorrectCount}/2 views in this stage
+                      {getCurrentProgress(currentQ.flower.scientific).stageCorrectCount >= 2 && (
                         <span className="level-up"> → Advancing to Multiple Choice!</span>
                       )}
                     </p>
@@ -523,8 +528,8 @@ function App() {
                     <>
                       <p>Perfect! You've mastered this flower!</p>
                       <p className="progress-info">
-                        Progress: {currentQ.stageCorrectCount + 1}/2 correct in this stage
-                        {currentQ.stageCorrectCount + 1 >= 2 && (
+                        Progress: {getCurrentProgress(currentQ.flower.scientific).stageCorrectCount}/2 correct in this stage
+                        {getCurrentProgress(currentQ.flower.scientific).stageCorrectCount >= 2 && (
                           <span className="level-up"> → Fully Mastered!</span>
                         )}
                       </p>
@@ -543,8 +548,8 @@ function App() {
                   <>
                     <p>Correct! Well done!</p>
                     <p className="progress-info">
-                      Progress: {currentQ.stageCorrectCount + 1}/2 correct in this stage
-                      {currentQ.stageCorrectCount + 1 >= 2 && currentQ.stage !== MasteryStage.MASTERY && (
+                      Progress: {getCurrentProgress(currentQ.flower.scientific).stageCorrectCount}/2 correct in this stage
+                      {getCurrentProgress(currentQ.flower.scientific).stageCorrectCount >= 2 && currentQ.stage !== MasteryStage.MASTERY && (
                         <span className="level-up"> → Level Up!</span>
                       )}
                     </p>
