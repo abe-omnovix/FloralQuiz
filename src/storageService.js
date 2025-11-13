@@ -102,6 +102,11 @@ export function recordCorrectAnswer(scientificName) {
   const progress = getProgress();
   const flowerData = progress[scientificName] || initializeFlower(scientificName);
 
+  console.log(`📊 BEFORE recording correct for ${scientificName}:`, {
+    stage: flowerData.stage,
+    stageCorrectCount: flowerData.stageCorrectCount
+  });
+
   flowerData.correctCount++;
   flowerData.stageCorrectCount++;
   flowerData.lastSeen = new Date().toISOString();
@@ -120,19 +125,30 @@ export function recordCorrectAnswer(scientificName) {
   const stage = flowerData.stage;
   const stageCorrect = flowerData.stageCorrectCount;
 
+  console.log(`🔍 Checking progression: stage=${stage}, stageCorrect=${stageCorrect}`);
+
   if (stage === MasteryStage.FLASHCARD && stageCorrect >= 2) {
+    console.log(`⬆️ ADVANCING from Flashcard to Multiple Choice!`);
     flowerData.stage = MasteryStage.MULTIPLE_CHOICE;
     flowerData.stageCorrectCount = 0;
   } else if (stage === MasteryStage.MULTIPLE_CHOICE && stageCorrect >= 2) {
+    console.log(`⬆️ ADVANCING from Multiple Choice to Short Answer!`);
     flowerData.stage = MasteryStage.SHORT_ANSWER;
     flowerData.stageCorrectCount = 0;
   } else if (stage === MasteryStage.SHORT_ANSWER && stageCorrect >= 2) {
+    console.log(`⬆️ ADVANCING from Short Answer to Scientific Name!`);
     flowerData.stage = MasteryStage.SCIENTIFIC_NAME;
     flowerData.stageCorrectCount = 0;
   } else if (stage === MasteryStage.SCIENTIFIC_NAME && stageCorrect >= 2) {
+    console.log(`⬆️ ADVANCING from Scientific Name to Mastery!`);
     flowerData.stage = MasteryStage.MASTERY;
     flowerData.stageCorrectCount = 0;
   }
+
+  console.log(`📊 AFTER progression check for ${scientificName}:`, {
+    stage: flowerData.stage,
+    stageCorrectCount: flowerData.stageCorrectCount
+  });
 
   progress[scientificName] = flowerData;
   localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));

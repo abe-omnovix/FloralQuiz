@@ -50,11 +50,20 @@ function App() {
 
     const questions = [];
 
+    console.log('🌸 Generating quiz with flowers:', selected.map(f => f.scientific));
+
     for (let i = 0; i < selected.length; i++) {
       const flower = selected[i];
       const imageUrl = await fetchFlowerImageSmart(flower);
       const progress = getFlowerProgress(flower.scientific);
       const stage = progress.stage;
+
+      console.log(`Loading ${flower.scientific}:`, {
+        stage,
+        stageCorrectCount: progress.stageCorrectCount,
+        correctCount: progress.correctCount,
+        incorrectCount: progress.incorrectCount
+      });
 
       let questionData = {
         flower,
@@ -212,9 +221,18 @@ function App() {
     // Record progress
     if (isCorrect) {
       setScore(score + 1);
-      recordCorrectAnswer(currentQ.flower.scientific);
+      const updatedProgress = recordCorrectAnswer(currentQ.flower.scientific);
+      console.log(`✅ Correct answer for ${currentQ.flower.scientific}:`, {
+        stage: updatedProgress.stage,
+        stageCorrectCount: updatedProgress.stageCorrectCount,
+        totalCorrect: updatedProgress.correctCount
+      });
     } else {
-      recordIncorrectAnswer(currentQ.flower.scientific);
+      const updatedProgress = recordIncorrectAnswer(currentQ.flower.scientific);
+      console.log(`❌ Incorrect answer for ${currentQ.flower.scientific}:`, {
+        stage: updatedProgress.stage,
+        flaggedForReview: updatedProgress.flaggedForReview
+      });
     }
   };
 
