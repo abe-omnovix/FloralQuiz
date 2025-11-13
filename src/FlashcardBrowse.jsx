@@ -57,6 +57,32 @@ function FlashcardBrowse({ onBack }) {
     setShuffled(false);
   };
 
+  // Keyboard navigation - only active in flashcard browse mode
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Don't interfere with text inputs
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+        return;
+      }
+
+      if (e.key === 'ArrowLeft') {
+        handlePrev();
+      } else if (e.key === 'ArrowRight') {
+        handleNext();
+      } else if (e.key === ' ') {
+        e.preventDefault();
+        handleFlip();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+
+    // Cleanup when component unmounts
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [currentIndex, flowerList]); // Re-attach when these change
+
   const currentFlower = flowerList[currentIndex];
 
   return (
@@ -115,20 +141,5 @@ function FlashcardBrowse({ onBack }) {
     </div>
   );
 }
-
-// Add keyboard navigation
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'ArrowLeft') {
-    const prevBtn = document.querySelector('.btn-nav:first-of-type');
-    if (prevBtn) prevBtn.click();
-  } else if (e.key === 'ArrowRight') {
-    const nextBtn = document.querySelector('.btn-nav:last-of-type');
-    if (nextBtn) nextBtn.click();
-  } else if (e.key === ' ') {
-    e.preventDefault();
-    const flashcard = document.querySelector('.flashcard');
-    if (flashcard) flashcard.click();
-  }
-});
 
 export default FlashcardBrowse;

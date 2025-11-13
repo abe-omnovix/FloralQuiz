@@ -198,6 +198,14 @@
   margin-bottom: 10px;
 }
 
+.stage-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
 .stage-badge {
   display: inline-block;
   padding: 8px 16px;
@@ -206,6 +214,17 @@
   border-radius: 20px;
   font-size: 0.9rem;
   font-weight: 600;
+}
+
+.stage-progress {
+  display: inline-block;
+  padding: 6px 14px;
+  background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+  color: white;
+  border-radius: 15px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
 }
 
 .image-container {

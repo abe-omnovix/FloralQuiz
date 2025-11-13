@@ -344,7 +344,14 @@ function App() {
           <div className="question-container">
             <div className="question-header">
               <h2>{getQuestionPrompt(currentQ)}</h2>
-              <span className="stage-badge">{getStageBadgeText(currentQ.stage)}</span>
+              <div className="stage-info">
+                <span className="stage-badge">{getStageBadgeText(currentQ.stage)}</span>
+                {currentQ.stage !== MasteryStage.MASTERY && (
+                  <span className="stage-progress">
+                    {currentQ.stageCorrectCount}/2 correct
+                  </span>
+                )}
+              </div>
             </div>
 
             {currentQ.imageUrl ? (
